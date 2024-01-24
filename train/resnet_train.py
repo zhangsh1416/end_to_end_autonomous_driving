@@ -9,13 +9,14 @@ from networks.resnet import resnet_model
 from torch.utils.data import DataLoader
 from data_preparation.resnet_data import SimulatorDataset
 
-
+model = resnet_model()
+print(model)
 def train_val(cfg):
     if cfg.device == 'cpu':
         device = torch.device('cpu')
     else:
         os.environ['CUDA_VISIBLE_DEVICES'] = cfg.device
-        device = torch.device('gpu:0')
+        device = torch.device('cuda:0')
 
     # 第1步：构建数据读取迭代器
 
@@ -70,7 +71,7 @@ def parse_cfg():
     parser.add_argument('--epochs', type=int, default=100, help='total number of training epochs')
     parser.add_argument('--train-data', type=str, default='data/simulator/train/Dataset22/VehicleData.txt', help='data path')
     parser.add_argument('--val-data', type=str, default='data/simulator/train/Dataset22/VehicleData.txt', help='data path')
-    parser.add_argument('--device', type=str, default='cpu', help='e.g. cpu or 0 or 0,1,2,3')
+    parser.add_argument('--device', type=str, default='gpu', help='e.g. cpu or 0 or 0,1,2,3')
     parser.add_argument('--batch-size', type=int, default=2, help='batch size')
     parser.add_argument('--learning-rate', type=int, default=0.01, help='initial learning rate')
     parser.add_argument('--num-workers', type=int, default=0, help='number of workers')
