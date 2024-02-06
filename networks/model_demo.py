@@ -1,8 +1,8 @@
 from torch import nn
 from torchvision import models
 import torch
-
-def get_pretrained_resnet(device='cuda'):
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def get_pretrained_resnet(device=device):
     resnet = models.resnet50(pretrained=True)
     for param in resnet.parameters():
         param.requires_grad = False
@@ -11,7 +11,7 @@ def get_pretrained_resnet(device='cuda'):
         resnet = resnet.to(device)
     return resnet, num_features
 
-def create_custom_resnet_model(device='cuda'):
+def create_custom_resnet_model(device=device):
     original_resnet, num_features = get_pretrained_resnet(device=device)
     custom_model = CustomResNet(original_resnet, num_features).to(device)
     return custom_model
