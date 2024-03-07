@@ -21,7 +21,7 @@ from torchvision import transforms
 from networks.model_demo import create_custom_resnet_model
 from data_preparation.datapre_for_simulator import preprocess_image_for_model
 
-weights = torch.load('/home/shihong/桌面/Autonomous_Driving/autonomous_driving_simulator/train/end_to_end_{timestamp}.pt')
+weights = torch.load('train/end_to_end_{timestamp}.pt')
 model = create_custom_resnet_model()
 model.load_state_dict(weights)
 model.eval()

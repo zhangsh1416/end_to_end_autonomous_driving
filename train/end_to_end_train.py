@@ -1,104 +1,126 @@
 import torch
-import torchvision
-from torchvision import datasets, transforms, models
+import torchvision.models as models
 import torch.nn as nn
-from autonomous_driving_simulator.data_preparation.end_to_end_data_pre import Dataset_unity
+import torch.optim as optim
+from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
+from data_preparation.end_to_end_data_pre import Dataset_unity  # 确保这个模块和类是可用的
+import datetime
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+class EarlyStopping:
+  """早停机制，防止过拟合"""
 
-#创建数据集 creat dataset
-path_train = '/home/shihong/桌面/Autonomous_Driving/Simulator/Linux/Data/Dataset24/VehicleData.txt'
-path_val = '/home/shihong/桌面/Autonomous_Driving/Simulator/Linux/Data/Dataset11/VehicleData.txt'
-train_data = Dataset_unity(data_path=path_train)
-val_data = Dataset_unity(data_path=path_val)
-#加载数据 load dataset
-BATCH_SIZE = 128
-trainloader = torch.utils.data.DataLoader(train_data,
-                                          batch_size=BATCH_SIZE,
-                                          shuffle=True,
-                                          num_workers=2)
-testloader = torch.utils.data.DataLoader(val_data,
-                                          batch_size=BATCH_SIZE,
-                                          shuffle=True,
-                                          num_workers=2)
+  def __init__(self, patience=7, min_delta=0):
+    """
+    :param patience: (int) 当验证集损失在连续几个epoch内未改善时，训练将停止
+    :param min_delta: (float) 表示被认为是改善的最小变化
+    """
+    self.patience = patience
+    self.min_delta = min_delta
+    self.counter = 0
+    self.best_loss = None
+    self.early_stop = False
 
-#定义模型 define model
-resnet = models.resnet50(pretrained=True)
+  def __call__(self, val_loss):
+    if self.best_loss is None:
+      self.best_loss = val_loss
+    elif val_loss > self.best_loss - self.min_delta:
+      self.counter += 1
+      if self.counter >= self.patience:
+        self.early_stop = True
+    else:
+      self.best_loss = val_loss
+      self.counter = 0
+def main():
+  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-#冻结所有权重 freeze all trainable parameters
-for param in resnet.parameters():
-  param.requires_grad = False
-#替换Resnet50的全连接层 replace the FC layer of Resnet50
-num_features =  resnet.fc.in_features
-resnet.fc = nn.Sequential(nn.Linear(in_features=2048, out_features=3), nn.Tanh())
+  # 创建数据集
+  path_train = '../data/train_set.csv'
+  path_val = '../data/test_set.csv'
+  train_data = Dataset_unity(data_path=path_train)
+  val_data = Dataset_unity(data_path=path_val)
 
-#将模型转到GPU move model to GPU
-resnet.to(device)
+  # 加载数据集
+  BATCH_SIZE = 128
 
-#定义损失函数和优化器 define loss function and optimizer
-criterion = nn.MSELoss()
-optimizer = torch.optim.SGD(params=resnet.fc.parameters(), lr=0.005, momentum=0.9)
+  
+  trainloader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+  testloader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)  # 验证集一般不需要shuffle
 
-#开始训练 start training
-EPOCH = 100
-print("=========================================== START TRAINING ===========================================")
-for epoch in range(EPOCH):
-  running_loss = 0.0
-  correct, total = 0, 0
-  for i, data in enumerate(trainloader, 0):
-    # Load images and labels
-    inputs, labels = data
-    inputs, labels = inputs.to(device), labels.to(device)
+  # 定义模型
+  resnet = models.resnet50(pretrained=True)
+  for param in resnet.parameters():
+    param.requires_grad = False
+  num_features = resnet.fc.in_features
+  resnet.fc = nn.Sequential(nn.Linear(num_features, 1), nn.Tanh())
+  resnet.to(device)
 
-    # Reset the gradient to zero
-    optimizer.zero_grad()
+  # 定义损失函数和优化器
+  criterion = nn.MSELoss()
+  optimizer = optim.Adam(resnet.fc.parameters(), lr=0.0005)
 
-    # Forward pass
-    outputs = resnet(inputs)
-    # print(outputs.shape)
-    # Calculate loss
-    loss = criterion(outputs, labels)
-    # Backward pass
-    loss.backward()
-    # Update the weights
-    optimizer.step()
+  # 训练和验证
+  EPOCHS = 100
+  train_losses = []
+  val_losses = []
 
-    # Calculate loss for each iteration
-    running_loss += loss.item()
-    # Update total and correct predictions
-    total += labels.size(0)
-    print(f"total:{total}")
-    # print(outputs.shape)
-    # print(labels.shape)
-    correct_predictions = torch.all(outputs == labels, dim=1)
-    correct += correct_predictions.sum().item()
-    #print((outputs==labels).sum().item())
-    print(f"correct:{correct}")
+  print("=========================================== START TRAINING ===========================================")
+  early_stopping = EarlyStopping(patience=10, min_delta=0.001)
+  for epoch in range(EPOCHS):
+    resnet.train()
+    running_loss = 0.0
+    for inputs, labels in trainloader:
+      inputs, labels = inputs.to(device), labels.view(-1, 1).to(device)  # 确保labels是正确的形状
 
-    # Print loss and training accuracy for every 100th iteration for each epoch
-  print(f"epoch: {epoch+1}, running_loss: {running_loss/100}, Training Accuracy: {correct/total*100}")
-print("=========================================== FINISHED TRAINING ==========================================")
+      optimizer.zero_grad()
+      outputs = resnet(inputs)
+      loss = criterion(outputs, labels)
+      loss.backward()
+      optimizer.step()
 
-#保存模型
-PATH = "./resnet_model.pt"
-torch.save(resnet, PATH)
+      running_loss += loss.item()
 
-def accuracy_calculation(testloader, model, attack=False):
-  correct, total = 0, 0
-  for data in testloader:
-    # Extract input images and respective labels
-    inputs, labels = data
-    # Move the images and their labels to device (for GPU processing)
-    inputs, labels = inputs.to(device), labels.to(device)
-    # This condition checks whether the input images are adversarial or not
-    # The model consumes clean test images
-    outputs = resnet(inputs)
+    # 计算平均训练损失
+    train_loss = running_loss / len(trainloader)
+    train_losses.append(train_loss)
 
-    # Update total and correct predictions and return them
-    total += labels.size(0)
-    correct += (outputs==labels).sum().item()
-  return correct, total
+    # 验证过程
+    resnet.eval()
+    val_running_loss = 0.0
+    with torch.no_grad():
+      for inputs, labels in testloader:
+        inputs, labels = inputs.to(device), labels.view(-1, 1).to(device)
+        outputs = resnet(inputs)
+        val_loss = criterion(outputs, labels)
+        val_running_loss += val_loss.item()
 
-test_accuracy = correct/total
-print("test_accurcy:",test_accuracy)
+    # 计算平均验证损失
+    val_loss = val_running_loss / len(testloader)
+    val_losses.append(val_loss)
+
+    early_stopping(val_loss)
+    if early_stopping.early_stop:
+      print("早停机制启动，终止训练！")
+      break
+
+    print(f"Epoch {epoch + 1}/{EPOCHS}, Train Loss: {train_loss:.4f}, Validation Loss: {val_loss:.4f}")
+
+  # 结果可视化
+  plt.plot(train_losses, label='Training Loss')
+  plt.plot(val_losses, label='Validation Loss')
+  plt.xlabel('Epoch')
+  plt.ylabel('Loss')
+  plt.title('Training and Validation Loss')
+  plt.legend()
+  plt.show()
+
+  # 保存模型
+  now = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+  filename = f"model_resnet50_{now}.pth"
+  torch.save(resnet.state_dict(), filename)
+
+
+
+if __name__ == "__main__":
+  main()

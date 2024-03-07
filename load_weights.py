@@ -1,13 +1,14 @@
+# 测试模型是否可以成功加载
 import torch
 import torch.nn as nn
-from autonomous_driving_simulator.networks.model_demo import get_pretrained_resnet
-from autonomous_driving_simulator.networks.model_demo import create_custom_resnet_model
+from networks.model_demo import get_pretrained_resnet
+from networks.model_demo import create_custom_resnet_model
 import cv2
 import numpy as np
-
+from datetime import datetime
 from torchvision import transforms
 
-pretrained_weights = torch.load('//home/shihong/桌面/Autonomous_Driving/autonomous_driving_simulator/train/end_to_end_{timestamp}.pt')
+pretrained_weights = torch.load('train/end_to_end_{timestamp}.pt')
 
 model = create_custom_resnet_model()
 model.eval()
@@ -33,8 +34,12 @@ def preprocess_image_for_model(img):
     return img_tensor
 
 
-img = cv2.imread('/home/shihong/桌面/Autonomous_Driving/Simulator/Linux/Data/Dataset24/IMG/CapturedImage2392.jpg')
+img = cv2.imread('CapturedImage199.jpg')
 
 img_tensor = preprocess_image_for_model(img)
+start_time = datetime.now()
 output = model(img_tensor)
+end_time = datetime.now()
+elapsed_time = (end_time - start_time).total_seconds()
 print(output)
+print(f"Model ran in {elapsed_time} seconds.")
