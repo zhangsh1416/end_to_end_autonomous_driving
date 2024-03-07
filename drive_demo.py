@@ -13,6 +13,7 @@ from networks.model_demo import create_custom_resnet_model
 from outputs_to_labels import convert_model_output_to_labels
 import threading
 from threading import Event
+from networks import synthetical_model
 input_ready = Event()
 # Create an instance of a WebSocket server based on Flask and Socket.IO.
 sio_server = socketio.Server()

@@ -3,5 +3,6 @@ Debug/
 __pycache__/
 Linux/
 IMG/
-
+data/
+*.pth
 *.pt
