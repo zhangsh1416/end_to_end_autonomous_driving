@@ -1,93 +1,231 @@
-# autonomous_driving_shihong_zhang
+English | [中文](https://github.com/tum-autonomousdriving/.github/blob/main/profile/README_zh.md)
+# Autonomous Driving Simulator
 
+<p align="center"> <img alt="Logo" src="figures/logo_f.png", width = "400"></p>
 
+## Contents
 
-## Getting started
+- [Framework](#framework)
+- [Instructions](#instructions)
+- [Developers](#developers)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Framework
+![image](figures/framework.png)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Instructions
 
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+### 1. Workflow
+![image](figures/structure.png)
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.lrz.de/tum-autonomousdriving/praktikum23w/team07/autonomous_driving_shihong_zhang.git
-git branch -M main
-git push -uf origin main
+Step 1: Collect data from the Simulator
+Step 2: Design neural network class (torch.nn.Module)
+        Write data processing class (torch.utils.data.Dataset)
+Step 3: Train the model and save weights (torch.utils.data.DataLoader, optimizer, loss function, …)
+Step 4: Drive a car in the Simulator using the trained model
+
 ```
 
-## Integrate with your tools
+### 2. Train
 
-- [ ] [Set up project integrations](https://gitlab.lrz.de/tum-autonomousdriving/praktikum23w/team07/autonomous_driving_shihong_zhang/-/settings/integrations)
+Please open the "Simulator_train" application on your operating system.
 
-## Collaborate with your team
+Once opened, the Scene will initiate the recording of training data, which will be saved in the "Data/DatasetX/IMG" path and the "Data/DatasetX/VehicleData.txt" file.
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+In this `VehicleData.txt` the data is: the path of IMG, throttle(range: 0 to 1), brakes(range: 0 to 1), sterring(range: -1 to 1).
 
-## Test and Deploy
+**Please note that you should not remove the "Index.txt" file from the "Data/" directory.**
 
-Use the built-in continuous integration in GitLab.
+### 3. Drive
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+Please open the "Simulator_test" application on your operating system.
 
-***
+and then run your: 
+```
+python drive.py
+```
+In this scene, 3 images are output to your net, and 3 elements of control are acepted.(throttle, brakes and steering)
 
-# Editing this README
+### 4. Simulator Functions
+<table>
+    <tr>
+        <th>Function</th>
+        <th>Keyboard Defaults</th>
+        <th>Gamepad Defaults</th>
+    </tr>
+    <tr>
+        <td>Sterring</td>
+        <td>A/D</td>
+        <td>Left Stick - Left/Right</td>
+    </tr>
+    <tr>
+        <td>Throttle</td>
+        <td>W</td>
+        <td>Left Stick - Up, Right Trigger</td>
+    </tr>
+    <tr>
+        <td>Brakes</td>
+        <td>S</td>
+        <td>Left Stick - Down, Left Trigger</td>
+    </tr>
+    <tr>
+        <td>Reset the Position</td>
+        <td>F1</td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td>Switch mouse control</td>
+        <td>Mouse right button</td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td>Quit</td>
+        <td>ESC</td>
+        <td>-</td>
+    </tr>
+    <!--
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    -->
+</table>
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### 5. Simulator Scenes Download Link: 
 
-## Suggestions for a good README
+Source code:
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+https://gitlab.lrz.de/tum-autonomousdriving/autonomous-driving
 
-## Name
-Choose a self-explaining name for your project.
+Build:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+https://syncandshare.lrz.de/getlink/fiEQ6uWeJQFmosTX7HsxwG/
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+<!--
+## Functions
+* ### High-definition digital twins of real cities and roads
+Simulate complex and changeable real road scenarios to improve the ability of autonomous driving algorithms to deal with such scenarios.
+<table>
+  <tr>
+    <td vlign="center">
+      <img src="figures/urban.png" alt="Pin popup window">
+    </td>
+    <td vlign="center">
+      <img src="figures/urban2.png" alt="Popup window">
+    </td>
+  </tr>
+</table>
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+* ### Simulation of light and weather changes
+Simulate changes in light and weather to improve the robustness of autonomous driving algorithms.
+<table>
+  <tr>
+    <td vlign="center">
+      <img src="figures/light.png" alt="Pin popup window", width ="600">
+    </td>
+    <td vlign="center">
+      <img src="figures/weather.png" alt="Popup window", width ="600">
+    </td>
+  </tr>
+</table>
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+* ### Automatic Data Labeling
+The automatic data annotation function can automatically generate labels for training 2D/3D object detection and semantic/instance segmentation algorithms.
+<table>
+  <tr>
+    <td vlign="center">
+      <img src="figures/lable.png" alt="Pin popup window">
+    </td>
+    <td vlign="center">
+      <img src="figures/segmentation.png" alt="Popup window">
+    </td>
+  </tr>
+</table>
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+* ### Industrial LiDAR Simulation
+Integrated Unity industrial-grade lidar simulation for training and testing 3D object detection, distance estimation and SLAM algorithms.
+<table>
+  <tr>
+    <td vlign="center">
+      <img src="figures/sim1.png" alt="Pin popup window", width ="600">
+    </td>
+    <td vlign="center">
+      <img src="figures/Sim2.jpg" alt="Popup window", width ="600">
+    </td>
+  </tr>
+</table>
+-->
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+## Useful Vision Algorithms
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Pretrained Weights:
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+https://syncandshare.lrz.de/getlink/fi6mGLJoqSu3GEBxW7aWNT/weights
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+### 1. Object Detection
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+1.1 YOLOv5
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+1.2 YOLOv8
 
-## License
-For open source projects, say how it is licensed.
+### 2. Semantic Segmentation
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+2.1 YOLOv5_sg
+
+## Developers
+
+### 1. Affiliation
+
+<a href="https://www.ce.cit.tum.de/air/home/">Chair of Robotics, Artificial Intelligence and Real-time Systems</a> · <a href="https://www.tum.de/">Technical University of Munich</a>
+
+### 2. Supervisor
+
+**[Prof. Dr.-Ing. habil. Alois Christian Knoll](https://www.ce.cit.tum.de/air/people/prof-dr-ing-habil-alois-knoll/)**
+
+
+### 3. Programmers
+
+<table>
+    <tr>
+        <td><font size='4'>Gao Yichao</font></td>
+        <td><font size='3'>Yu Zhou</font></td>
+        <td>Michael Sodamin</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Song Yinglei</td>
+        <td>Liu Hao</td>
+        <td>Liu Hongshen</td>
+        <td>Liu Lian</td>
+        <td>Liu Zhuo</td>
+    </tr>
+      <tr>
+        <td>Xie Tongtong</td>
+        <td>Yang Xiaohan</td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <!--
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    -->
+</table>
+
+### 4. Corresponding Programmer
+
+周立国 <a href="https://www.ce.cit.tum.de/air/people/liguo-zhou/">Zhou Liguo</a>
+<!--
+### Former Members
+* Dipl. Cao Wei, *M.Sc.*; Zhang Jingyu; Zhang Hanzhen, *M.Sc.*; Meng Jun; Cui Chuanlu; Li Haichuan
+* Zhang Chao, *M.Sc.*; Lin Tianhao, *M.Sc.*; Wang Ruining, *M.Sc.*; Huo Yifan; Ren Peng; Zhang Yujie
+-->
